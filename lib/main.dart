@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:blur/blur.dart';
 
 var audio = AudioPlayer();
 var audioStat = {};
@@ -180,99 +181,109 @@ class _VideoScreenState extends State<VideoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              IconButton(
-                  onPressed: () {
-                    audio.dispose();
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.close_rounded)),
-              const Spacer(),
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded))
-            ],
-          ),
-          const Spacer(),
-          ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: AspectRatio(
-                aspectRatio: 1.8,
-                child: Image.network(
-                  widget.v['videoThumbnails'][0]['url'],
-                  scale: .75,
-                ),
-              )),
-          const SizedBox(
-            height: 30,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-            child: Text(
-              widget.v['title'],
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FloatingActionButton(
-                onPressed: () {
-                  if (audio.state == PlayerState.playing) {
-                    audio.pause();
-                  } else {
-                    audio.resume();
-                  }
-                },
-                child: audio.state == PlayerMode.lowLatency
-                    ? const CircularProgressIndicator.adaptive()
-                    : Icon(audio.state == PlayerState.playing
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded),
-              )
-            ],
-          ),
-          const SizedBox(
-            height: 30,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(intToTimeLeft(
-                  Duration(seconds: audioStat['currentDuration'] ?? 0)
-                      .inSeconds)),
-              Slider(
-                value: audioStat['currentDuration'] ?? 0,
-                onChanged: (value) {
-                  audio.seek(Duration(seconds: value.toInt()));
-                  // audioStat['currentDuration'] = value;
-                  setState(() {});
-                },
-                min: 0,
-                max: audioStat['duration'] ?? 100,
+    return Image.network(
+      widget.v['videoThumbnails'][0]['url'],
+      fit: BoxFit.fitHeight,
+      height: MediaQuery.of(context).size.height,
+    ).blurred(
+        colorOpacity: 0.7,
+        blurColor: Colors.black87,
+        blur: 10,
+        overlay: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            audio.dispose();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close_rounded)),
+                      const Spacer(),
+                      IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded))
+                    ],
+                  ),
+                  const Spacer(),
+                  ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                      child: AspectRatio(
+                        aspectRatio: 1.8,
+                        child: Image.network(
+                          widget.v['videoThumbnails'][0]['url'],
+                          scale: .75,
+                        ),
+                      )),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Text(
+                      widget.v['title'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () {
+                          if (audio.state == PlayerState.playing) {
+                            audio.pause();
+                          } else {
+                            audio.resume();
+                          }
+                        },
+                        child: audio.state == PlayerMode.lowLatency
+                            ? const CircularProgressIndicator.adaptive()
+                            : Icon(audio.state == PlayerState.playing
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(intToTimeLeft(
+                          Duration(seconds: audioStat['currentDuration'] ?? 0)
+                              .inSeconds)),
+                      Slider(
+                        value: audioStat['currentDuration'] ?? 0,
+                        onChanged: (value) {
+                          audio.seek(Duration(seconds: value.toInt()));
+                          // audioStat['currentDuration'] = value;
+                          setState(() {});
+                        },
+                        min: 0,
+                        max: audioStat['duration'] ?? 100,
+                      ),
+                      Text(intToTimeLeft(
+                          Duration(seconds: audioStat['duration'] ?? 0)
+                              .inSeconds)),
+                    ],
+                  )
+                ],
               ),
-              Text(intToTimeLeft(
-                  Duration(seconds: audioStat['duration'] ?? 0).inSeconds)),
-            ],
-          )
-        ],
-      ),
-    ));
+            )));
   }
 }
 
