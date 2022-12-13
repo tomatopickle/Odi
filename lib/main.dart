@@ -129,6 +129,11 @@ class _VideoScreenState extends State<VideoScreen> {
       var data = jsonDecode(res.body);
       audio.play(UrlSource(data['adaptiveFormats'][0]['url']));
       Timer.periodic(const Duration(seconds: 1), (e) {
+        if (!mounted) {
+          e.cancel();
+
+          return;
+        }
         audio.getCurrentPosition().then((value) {
           audioStat['currentDuration'] = value?.inSeconds;
           setState(() {});
