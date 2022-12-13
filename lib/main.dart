@@ -62,20 +62,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List videoResults = [];
+  bool loading = true;
   Future<void> getTrending() async {
     http
         .get(Uri.parse('$instanceUrl/popular?region=IN&type="music"'))
         .then(((value) {
       setState(() {
         videoResults = jsonDecode(value.body);
+        loading = false;
       });
     }));
   }
 
   Future<void> search(q) async {
+    setState(() {
+      loading = true;
+    });
     http.get(Uri.parse('$instanceUrl/search?region=IN&q=$q')).then(((value) {
       setState(() {
         videoResults = jsonDecode(value.body);
+        loading = false;
       });
     }));
   }
@@ -96,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            if (loading) LinearProgressIndicator(),
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: TextField(
