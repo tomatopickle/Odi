@@ -90,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-// TODO: Get this working fr
     getTrending();
   }
 
@@ -100,40 +99,149 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Odi'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            if (loading) const LinearProgressIndicator(),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: TextField(
-                  onSubmitted: (value) {
-                    search(value);
-                  },
-                  textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
-                      filled: true,
-                      isDense: true,
-                      hintText: 'Search',
-                      prefixIcon: Icon(Icons.search_rounded))),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                if (loading) const LinearProgressIndicator(),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: TextField(
+                      onSubmitted: (value) {
+                        search(value);
+                      },
+                      textInputAction: TextInputAction.search,
+                      decoration: const InputDecoration(
+                          filled: true,
+                          isDense: true,
+                          hintText: 'Search',
+                          prefixIcon: Icon(Icons.search_rounded))),
+                ),
+                for (Map videoData in videoResults)
+                  VideoPreview(
+                    video: videoData,
+                    onCLick: (v) {
+                      showDialog(
+                          context: context,
+                          builder: ((context) {
+                            return VideoScreen(
+                              v: v,
+                              fromMini: false,
+                            );
+                          })).then((e) {
+                        audioStat['ui'] = 'mini';
+                        setState(() {});
+                        // if (audioStat['ui'] != 'mini') {
+                        //   audio.pause();
+                        // }
+                        // setState(() {});
+                      });
+                    },
+                  )
+              ],
             ),
-            for (Map videoData in videoResults)
-              VideoPreview(
-                video: videoData,
-                onCLick: (v) {
-                  showDialog(
-                      context: context,
-                      builder: ((context) {
-                        return VideoScreen(
-                          v: v,
-                        );
-                      })).then((val) {
+          ),
+        ],
+      ),
+      bottomNavigationBar: audioStat['data']?.isNotEmpty ?? false
+          ? MiniPlayer(onClose: () {
+              audio.pause();
+              setState(() {
+                audioStat['data'] = {};
+                audioStat['ui'] = 'full';
+              });
+            }, onOpen: () {
+              audioStat['ui'] = 'full';
+              showDialog(
+                  context: context,
+                  builder: ((context) {
+                    return VideoScreen(v: audioStat['data'], fromMini: true);
+                  })).then((e) {
+                if (audioStat['ui'] != 'mini') {
+                  audio.pause();
+                }
+                setState(() {});
+              });
+            })
+          : const SizedBox(),
+    );
+  }
+}
+
+class MiniPlayer extends StatefulWidget {
+  const MiniPlayer({super.key, required this.onClose, required this.onOpen});
+  final Function onClose;
+  final Function onOpen;
+  @override
+  State<MiniPlayer> createState() => _MiniPlayerState();
+}
+
+class _MiniPlayerState extends State<MiniPlayer> {
+  @override
+  void initState() {
+    super.initState();
+    audio.onPlayerStateChanged.listen((event) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        widget.onOpen();
+      },
+      child: SizedBox(
+        height: 50,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Image.network(
+                  audioStat['data']['videoThumbnails'][0]['url'],
+                ),
+              ),
+              Expanded(
+                flex: 7,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    audioStat['data']['title'],
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              FloatingActionButton.small(
+                onPressed: () {
+                  if (audio.state == PlayerState.playing) {
                     audio.pause();
-                    // audio.dispose();
-                  });
+                  } else {
+                    audio.resume();
+                  }
                 },
-              )
-          ],
+                child: audio.state == PlayerMode.lowLatency
+                    ? const CircularProgressIndicator.adaptive()
+                    : Icon(audio.state == PlayerState.playing
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              InkWell(
+                  onTap: () {
+                    widget.onClose();
+                  },
+                  child: const Icon(Icons.keyboard_arrow_down_rounded))
+            ],
+          ),
         ),
       ),
     );
@@ -141,9 +249,10 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class VideoScreen extends StatefulWidget {
-  const VideoScreen({super.key, required this.v});
+  const VideoScreen({super.key, required this.v, required this.fromMini});
 
   final Map v;
+  final bool fromMini;
   @override
   State<VideoScreen> createState() => _VideoScreenState();
 }
@@ -161,10 +270,12 @@ class _VideoScreenState extends State<VideoScreen> {
         .get(Uri.parse(
             '$instanceUrl/videos/${widget.v['videoId']}?fields=videoId,title,description,adaptiveFormats'))
         .then((res) async {
+      audioStat['data'] = widget.v;
       var data = jsonDecode(res.body);
-      print(data);
-      audio.play(UrlSource(
-          data['adaptiveFormats'][0]['url'] + '&local=true&quality=dash'));
+      if (!widget.fromMini) {
+        audio.play(UrlSource(
+            data['adaptiveFormats'][0]['url'] + '&local=true&quality=dash'));
+      }
       Timer.periodic(const Duration(seconds: 1), (e) {
         if (!mounted) {
           e.cancel();
@@ -215,12 +326,17 @@ class _VideoScreenState extends State<VideoScreen> {
                       IconButton(
                           onPressed: () {
                             audio.pause();
+                            audioStat['data'] = {};
+
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close_rounded)),
                       const Spacer(),
                       IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            audioStat['ui'] = 'mini';
+                            Navigator.pop(context);
+                          },
                           icon: const Icon(Icons.keyboard_arrow_down_rounded))
                     ],
                   ),
