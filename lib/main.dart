@@ -195,7 +195,7 @@ class _VideoScreenState extends State<VideoScreen> {
     ).blurred(
         colorOpacity: 0.7,
         blurColor: Colors.black87,
-        blur: 10,
+        blur: 20,
         overlay: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Scaffold(
@@ -335,7 +335,8 @@ class VideoPreview extends StatelessWidget {
                     right: 5,
                     child: Opacity(
                       opacity: 0.75,
-                      child: Text(video['lengthSeconds'].toString()),
+                      child: Text(intToTimeLeft(
+                          int.parse(video['lengthSeconds'].toString()))),
                     ),
                   )
                 ],
