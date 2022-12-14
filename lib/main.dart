@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         visualDensity: FlexColorScheme.comfortablePlatformDensity,
         fontFamily: GoogleFonts.notoSans().fontFamily,
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       home: const HomeScreen(),
     );
   }
