@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            if (loading) LinearProgressIndicator(),
+            if (loading) const LinearProgressIndicator(),
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: TextField(
@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       })).then((val) {
                     audio.pause();
-                    audio.dispose();
+                    // audio.dispose();
                   });
                 },
               )
@@ -168,7 +168,6 @@ class _VideoScreenState extends State<VideoScreen> {
       Timer.periodic(const Duration(seconds: 1), (e) {
         if (!mounted) {
           e.cancel();
-
           return;
         }
         audio.getCurrentPosition().then((value) {
@@ -177,7 +176,7 @@ class _VideoScreenState extends State<VideoScreen> {
         });
       });
       audio.onDurationChanged.listen((event) {
-        if (event.inMicroseconds < 1) {
+        if (event.inMicroseconds < 1 || !mounted) {
           return;
         }
         audio.getDuration().then((value) {
@@ -186,7 +185,9 @@ class _VideoScreenState extends State<VideoScreen> {
         });
       });
       audio.onPlayerStateChanged.listen((event) {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
     });
   }
@@ -213,7 +214,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     children: [
                       IconButton(
                           onPressed: () {
-                            audio.dispose();
+                            audio.pause();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close_rounded)),
