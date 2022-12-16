@@ -335,7 +335,7 @@ class _VideoScreenState extends State<VideoScreen> {
       var data = jsonDecode(res.body);
       if (!widget.fromMini) {
         audio.play(UrlSource(
-            data['adaptiveFormats'][0]['url'] + '&local=true&quality=dash'));
+            'https://invidious.namazso.eu/latest_version?id=${data['videoId']}&itag=140&local=true'));
       }
       Timer.periodic(const Duration(seconds: 1), (e) {
         if (!mounted) {
