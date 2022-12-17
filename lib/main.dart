@@ -439,15 +439,19 @@ class _VideoScreenState extends State<VideoScreen> {
                     ],
                   ),
                   const Spacer(),
-                  ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(15)),
-                      child: AspectRatio(
-                        aspectRatio: 1.8,
-                        child: Image.network(
-                          widget.v['videoThumbnails'][0]['url'],
-                          scale: .75,
-                        ),
-                      )),
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: ClipRRect(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(15)),
+                        child: AspectRatio(
+                          aspectRatio: 1.8,
+                          child: Image.network(
+                            widget.v['videoThumbnails'][0]['url'],
+                            scale: .75,
+                          ),
+                        )),
+                  ),
                   const SizedBox(
                     height: 30,
                   ),
@@ -504,12 +508,10 @@ class _VideoScreenState extends State<VideoScreen> {
                             audio.resume();
                           }
                         },
-                        
                         child: loading == true
                             ? const CircularProgressIndicator(
                                 valueColor:
                                     AlwaysStoppedAnimation<Color>(Colors.black),
-
                               )
                             : Icon(audio.state == PlayerState.playing
                                 ? Icons.pause_rounded
