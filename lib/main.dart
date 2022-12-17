@@ -12,6 +12,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 
 var audio = AudioPlayer();
 var audioStat = {};
+bool loading = true;
 var key = 'AIzaSyCBCjn6lSKfcl0LhlKnf1abn8rhf61vEaU';
 List queue = [];
 int currentSongIndex = 0;
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
 
 Future skipPrev(context) {
   currentSongIndex -= 1;
+  Navigator.pop(context);
   return showDialog(
       context: context,
       builder: ((context) {
@@ -344,6 +346,12 @@ class VideoScreen extends StatefulWidget {
 class _VideoScreenState extends State<VideoScreen> {
   @override
   void initState() {
+    if (!widget.fromMini) {
+      setState(() {
+        loading = true;
+      });
+    }
+
     super.initState();
     // https://invidious.tiekoetter.com/api/v1/videos/aqz-KE-bpKQ?fields=videoId,title,description,adaptiveFormats&pretty=1
     getAudio();
@@ -372,6 +380,7 @@ class _VideoScreenState extends State<VideoScreen> {
 
         audio.getCurrentPosition().then((value) {
           audioStat['currentDuration'] = value?.inSeconds;
+          loading = false;
           setState(() {});
         });
       });
@@ -495,8 +504,13 @@ class _VideoScreenState extends State<VideoScreen> {
                             audio.resume();
                           }
                         },
-                        child: audio.state == PlayerMode.lowLatency
-                            ? const CircularProgressIndicator.adaptive()
+                        
+                        child: loading == true
+                            ? const CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.black),
+
+                              )
                             : Icon(audio.state == PlayerState.playing
                                 ? Icons.pause_rounded
                                 : Icons.play_arrow_rounded),
