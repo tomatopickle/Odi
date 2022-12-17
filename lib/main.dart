@@ -185,6 +185,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         SlidableAction(
                           onPressed: (e) {
                             queue.add(videoData);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Added to queue")));
                           },
                           backgroundColor:
                               Theme.of(context).colorScheme.primary,
@@ -457,6 +460,18 @@ class _VideoScreenState extends State<VideoScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Text('dfg');
+                                });
+                          },
+                          icon: const Icon(Icons.download_rounded)),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      IconButton(
                           iconSize: 30,
                           onPressed: (queue.length > 1 && currentSongIndex > 0)
                               ? () {
@@ -503,6 +518,62 @@ class _VideoScreenState extends State<VideoScreen> {
                                 }
                               : null,
                           icon: const Icon(Icons.skip_next_rounded)),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      IconButton(
+                          onPressed: (queue.isNotEmpty)
+                              ? () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return Scaffold(
+                                          appBar: AppBar(
+                                            title: const Text('Queue'),
+                                          ),
+                                          body: ListView.builder(
+                                              itemCount: queue.length,
+                                              itemBuilder: ((context, index) {
+                                                return ListTile(
+                                                    selected:
+                                                        currentSongIndex ==
+                                                            index,
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                                .symmetric(
+                                                            horizontal: 16.0,
+                                                            vertical: 5),
+                                                    leading: Image.network(
+                                                        queue[index][
+                                                                'videoThumbnails']
+                                                            [0]['url'],
+                                                        fit: BoxFit.cover),
+                                                    onTap: () {
+                                                      currentSongIndex = index;
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: ((context) {
+                                                            return VideoScreen(
+                                                                v: queue[
+                                                                    currentSongIndex],
+                                                                fromMini: false,
+                                                                controlled:
+                                                                    true);
+                                                          }));
+                                                    },
+                                                    title: Text(
+                                                      queue[index]['title'],
+                                                      maxLines: 1,
+                                                      softWrap: false,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ));
+                                              })),
+                                        );
+                                      });
+                                }
+                              : null,
+                          icon: const Icon(Icons.queue_music)),
                     ],
                   ),
                   const SizedBox(
