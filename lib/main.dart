@@ -398,9 +398,9 @@ class _VideoScreenState extends State<VideoScreen> {
     ).blurred(
         colorOpacity: 0.7,
         blurColor: Colors.black87,
-        blur: 20,
+        blur: 50,
         overlay: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(0.0),
             child: Scaffold(
               backgroundColor: Colors.transparent,
               body: Column(
